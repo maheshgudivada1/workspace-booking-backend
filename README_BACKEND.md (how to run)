@@ -1,0 +1,40 @@
+# Workspace Booking Backend
+
+Requirements:
+- Node >= 18
+- PostgreSQL (Neon) — DATABASE_URL in .env
+
+1. install
+   npm install
+
+2. set env
+   cp .env.example .env
+   edit .env and set DATABASE_URL to your Neon connection string
+
+3. run migrations (creates tables)
+   npm run migrate
+
+4. seed demo
+   npm run seed
+
+5. start dev server
+   npm run dev
+
+Production:
+- build: npm run build
+- run: npm start
+- Deploy on Render / Railway: set DATABASE_URL and PORT env vars.
+
+API Endpoints:
+- GET /api/rooms
+- POST /api/rooms                  { name, baseHourlyRate, capacity, description }
+- POST /api/rooms/seed
+- POST /api/bookings               { roomId, userName, startTime (ISO UTC), endTime (ISO UTC) }
+- POST /api/bookings/:id/cancel
+- GET /api/bookings?from=YYYY-MM-DD&to=YYYY-MM-DD
+- GET /api/analytics?from=YYYY-MM-DD&to=YYYY-MM-DD
+
+Notes:
+- Timezone: API expects ISO UTC timestamps (frontend converts IST datetime-local to UTC)
+- Pricing: prorated by minute; peak multiplier 1.5 (Mon-Fri 10-13 & 16-19 IST)
+- Cancellation: allowed only if request > 2 hours before startTime

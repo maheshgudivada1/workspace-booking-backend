@@ -1,0 +1,35 @@
+# Architecture notes (backend)
+
+Data model:
+- rooms (id, name, base_hourly_rate, capacity, description)
+- bookings (id, room_id, user_name, start_time, end_time, duration_minutes, total_price, status)
+
+Pricing:
+- Per-minute proration using base hourly rate.
+- Peak windows: Mon–Fri 10:00–13:00 and 16:00–19:00 (IST)
+- Peak multiplier: 1.5
+- Pricing computed server-side so frontend preview is advisory only.
+
+Conflict handling & concurrency:
+- Booking creation uses a SERIALIZABLE transaction. Steps:
+  1. Start TRANSACTION ISOLATION LEVEL SERIALIZABLE
+  2. Check for conflicting confirmed bookings (overlap condition)
+  3. Insert booking if no conflict
+  4. Commit
+- If Postgres reports serialization failure (SQLSTATE 40001), the service retries the transaction (configurable via BOOKING_TX_RETRIES). This prevents race conditions without requiring advisory locks.
+- Race conditions still possible if retries exhausted — the client sees an error asking to retry.
+
+Cancellation policy:
+- Only allowed if current server time is more than 2 hours before booking.start_time.
+
+Analytics:
+- Computed on the fly using bookings table; cancelled bookings are excluded from totals.
+
+Deployment tips:
+- Use SSL for Neon connections if required.
+- For production, consider connection pooling (pg already handles pool) and set connection limits appropriate for free-tier.
+- To scale conflict handling, move to advisory locks per room or provide a queue/worker for booking writes if extremely high concurrency is expected.
+
+AI usage:
+- Pricing and conflict detection logic were derived and verified against assignment rules; generation assisted by ChatGPT, then refactored for clarity.
+
