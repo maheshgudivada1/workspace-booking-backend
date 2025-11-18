@@ -2,9 +2,11 @@
   "name": "workspace-backend",
   "version": "1.0.0",
   "private": true,
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:prod": "NODE_ENV=production node dist/index.js",
     "dev": "ts-node-dev --transpile-only --respawn src/index.ts",
     "migrate": "psql \"$DATABASE_URL\" -f schema.sql",
     "seed": "psql \"$DATABASE_URL\" -f seed.sql"
